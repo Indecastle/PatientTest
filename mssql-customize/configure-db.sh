@@ -5,19 +5,19 @@
 # and that system and user databases return "0" which means all databases are in an "online" state
 # https://docs.microsoft.com/en-us/sql/relational-databases/system-catalog-views/sys-databases-transact-sql?view=sql-server-2017 
 
-DBSTATUS=1
+DBSTATUS=0
 ERRCODE=1
 i=0
 
-while [[ $DBSTATUS -ne 0 ]] && [[ $i -lt 60 ]]; do
+while [ $DBSTATUS -ne 1 ] && [ $i -lt 60 ]; do
 	i=$((i+1))
     echo "Try connect (attempt $i)"
-	DBSTATUS=$(/opt/mssql-tools/bin/sqlcmd -h -1 -t 1 -U sa -P $MSSQL_SA_PASSWORD -Q "SET NOCOUNT ON; Select SUM(state) from sys.databases")
+	DBSTATUS=$(/opt/mssql-tools/bin/sqlcmd -h -1 -t 1 -U sa -P $MSSQL_SA_PASSWORD -Q "Select 1")
 	ERRCODE=$?
 	sleep 1
 done
 
-if [ $DBSTATUS -ne 0 ] || [ $ERRCODE -ne 0 ]; then 
+if [ $DBSTATUS -ne 1 ] || [ $ERRCODE -ne 0 ]; then 
 	echo "SQL Server took more than 60 seconds to start up or one or more databases are not in an ONLINE state"
 	exit 1
 fi
