@@ -19,18 +19,27 @@ public class PatientController : ControllerBase
         _dbContext = dbContext;
     }
     
+    /// <summary>
+    /// Get all patients
+    /// </summary>
     [HttpGet("GetAll")]
     public async Task<IActionResult> GetAllAsync()
     {
         return Ok(await _dbContext.Patients.Select(x => PatientDto.ToDto(x)).ToArrayAsync());
     }
 
+    /// <summary>
+    /// Get patient by id
+    /// </summary>
     [HttpGet("GetById")]
     public async Task<IActionResult> GetByIdAsync(Guid id)
     {
         return Ok(await _dbContext.Patients.FirstAsync(x => x.Id == id));
     }
     
+    /// <summary>
+    /// Get patient by date
+    /// </summary>
     [HttpGet("GetByDate")]
     public async Task<IActionResult> GetByDateAsync(DateTimeOffset dateTime)
     {
@@ -39,6 +48,9 @@ public class PatientController : ControllerBase
             .Select(x => PatientDto.ToDto(x)).ToArrayAsync());
     }
 
+    /// <summary>
+    /// Add a patient
+    /// </summary>
     [HttpPost("Add")]
     public async Task<IActionResult> AddAsync(AddPatientDto dto)
     {
@@ -54,6 +66,9 @@ public class PatientController : ControllerBase
         return Ok();
     }
     
+    /// <summary>
+    /// Edit a patient
+    /// </summary>
     [HttpPost("Edit")]
     public async Task<IActionResult> EditAsync(EditPatientDto dto)
     {
@@ -64,6 +79,9 @@ public class PatientController : ControllerBase
         return Ok();
     }
     
+    /// <summary>
+    /// Remove a patient
+    /// </summary>
     [HttpDelete("Remove")]
     public async Task<IActionResult> RemoveAsync(Guid id)
     {
