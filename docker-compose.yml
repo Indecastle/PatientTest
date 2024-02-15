@@ -1,0 +1,27 @@
+version: '3'
+
+services:
+  mssql:
+    build: ./mssql-customize
+    environment:
+      ACCEPT_EULA: Y
+      MSSQL_SA_PASSWORD: Qwerty123456
+      MSSQL_PID: Evaluation
+    ports:
+      - "1433:1433"
+    healthcheck:
+      test: ["CMD","bash","/usr/config/healthcheck.sh", ]
+      interval: 1s
+      timeout: 20s
+      retries: 10
+      start_period: 10s 
+  app:
+    build: ./Project
+    ports:
+      - "5192:80"
+    environment:
+      ASPNETCORE_ENVIRONMENT: Development
+      ConnectionStrings__Default: Server=mssql;User Id=sa;Password=Qwerty123456;Database=patientTest;TrustServerCertificate=True
+    depends_on:
+      mssql:
+        condition: service_healthy
