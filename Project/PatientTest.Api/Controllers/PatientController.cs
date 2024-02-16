@@ -18,7 +18,7 @@ public class PatientController : ControllerBase
         _logger = logger;
         _dbContext = dbContext;
     }
-    
+
     /// <summary>
     /// Get all patients
     /// </summary>
@@ -36,16 +36,38 @@ public class PatientController : ControllerBase
     {
         return Ok(await _dbContext.Patients.FirstAsync(x => x.Id == id));
     }
-    
+
     /// <summary>
     /// Get patient by date
     /// </summary>
     [HttpGet("GetByDate")]
-    public async Task<IActionResult> GetByDateAsync(DateTimeOffset dateTime)
+    public async Task<IActionResult> GetByDateAsync([FromQuery] string[] strDates)
     {
-        return Ok(await _dbContext.Patients
-            .Where(x => x.Birthdate.Date == dateTime.Date)
-            .Select(x => PatientDto.ToDto(x)).ToArrayAsync());
+        var query = _dbContext.Patients.AsQueryable();
+
+        foreach (var strdate in strDates)
+        {
+            var oper = strdate.Substring(0, 2);
+            var datetimeStr = strdate.Substring(2);
+
+            var dateTime = new DateTimeOffset(DateTimeOffset.Parse(datetimeStr).DateTime, TimeSpan.Zero);
+            var dateTimeWithoutTick = dateTime.AddSeconds(-dateTime.Second).AddMilliseconds(-dateTime.Millisecond);
+            var date = dateTime.Date;
+
+            query = oper switch
+            {
+                "eq" => query.Where(x => x.Birthdate.Date == date),
+                "ne" => query.Where(x => x.Birthdate.Date != date),
+                "lt" => query.Where(x => x.Birthdate < dateTime),
+                "gt" => query.Where(x => x.Birthdate > dateTime),
+                "ge" => query.Where(x => x.Birthdate >= dateTimeWithoutTick),
+                "le" => query.Where(x => x.Birthdate <= dateTimeWithoutTick),
+            };
+        }
+
+        var result = await query.Select(x => PatientDto.ToDto(x)).ToArrayAsync();
+
+        return Ok(result);
     }
 
     /// <summary>
@@ -65,7 +87,7 @@ public class PatientController : ControllerBase
 
         return Ok();
     }
-    
+
     /// <summary>
     /// Edit a patient
     /// </summary>
@@ -75,10 +97,10 @@ public class PatientController : ControllerBase
         var obj = await _dbContext.Patients.FirstAsync(x => x.Id == dto.Id);
         dto.Edit(obj);
         await _dbContext.SaveChangesAsync();
-        
+
         return Ok();
     }
-    
+
     /// <summary>
     /// Remove a patient
     /// </summary>

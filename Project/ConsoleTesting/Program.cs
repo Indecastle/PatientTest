@@ -8,12 +8,14 @@ using PatientTest.Models;
 
 using var httpClient = new HttpClient();
 
+var rand = new Random();
+
 for (int i = 0; i < 100; i++)
 {
     var patient = new AddPatientTestDto(
         true,
         Gender.Male,
-        DateTime.UtcNow.Date,
+        DateTime.UtcNow.Date - TimeSpan.FromDays(i/4) - TimeSpan.FromMinutes(rand.NextInt64(1, 1439)),
         new (
             "official",
             $"Ivanov{i}",
